@@ -3,22 +3,25 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 const express = require('express');
+const cors = require('cors'); // <-- ADDED: For connecting to frontend
 
 /*
  * ==========================================================
- * !! AAYUDESH'S PART !!
- * You MUST replace this with the real file and class name.
+ * !! AAYUDESH'S PART (Hand-off) !!
+ * This file (e.g., 'Graph.js') must be created by Aayudesh.
+ * Make sure the file name matches.
  * ==========================================================
  */
-// const Graph = require('./Graph'); // e.g., './AayudeshsGraph.js'
-// const gatorGraph = new Graph();
+const Graph = require('./Graph'); // <-- UNCOMMENTED
+const gatorGraph = new Graph(); // <-- UNCOMMENTED
 /*
  * ==========================================================
  */
 
 // --- 2. Express App Setup ---
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // <-- CHANGED: Port 3001 to avoid React conflict
+app.use(cors()); // <-- ADDED: Allow cross-origin requests
 app.use(express.json()); // Middleware to parse JSON bodies
 
 // --- 3. Haversine Formula ---
@@ -33,25 +36,19 @@ function getHaversineDistance(lat1, lon1, lat2, lon2) {
   const deltaLambda = (lon2 - lon1) * Math.PI / 180;
 
   const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-            Math.cos(phi1) * Math.cos(phi2) *
-            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    Math.cos(phi1) * Math.cos(phi2) *
+    Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c; // Distance in meters
 }
 
 // --- 4. Graph Loading Logic ---
+// This map stores node data temporarily for fast edge weight calculation
+const nodes = new Map();
 
-// This Map is a temporary helper to look up node coordinates
-// while we read the edges.csv file.
-const nodes = new Map(); // { node_ID -> { lat, lon } }
-
-/**
- * Reads nodes.csv and edges.csv, calculates edge weights,
- * and populates the gatorGraph instance.
- */
 async function loadGraphData() {
-  console.log('Loading graph data...');
+  console.log('Starting to load graph data...');
 
   // 1. Read nodes.csv
   const nodePromise = new Promise((resolve, reject) => {
@@ -62,16 +59,16 @@ async function loadGraphData() {
         const lat = parseFloat(row.latitude);
         const lon = parseFloat(row.longitude);
 
-        // Store in our temporary map for edge calculation
+        // Store node data for edge calculation
         nodes.set(nodeId, { lat, lon });
 
         /*
          * ==========================================================
-         * !! AAYUDESH'S PART !!
-         * Call his addNode method.
+         * !! AAYUDESH'S PART (Hand-off) !!
+         * Adding the node to Aayudesh's graph structure.
          * ==========================================================
          */
-        // gatorGraph.addNode(nodeId, lat, lon);
+        gatorGraph.addNode(nodeId, lat, lon); // <-- UNCOMMENTED
         /*
          * ==========================================================
          */
@@ -83,7 +80,7 @@ async function loadGraphData() {
       .on('error', reject);
   });
 
-  // We MUST wait for nodes to finish loading before we can process edges
+  // Wait for nodes to finish loading before processing edges
   await nodePromise;
 
   // 2. Read edges.csv
@@ -95,24 +92,21 @@ async function loadGraphData() {
         const sourceId = row.source_node_ID;
         const destId = row.destination_node_ID;
 
-        // Get the coordinate data we stored from nodes.csv
-        const sourceNode = nodes.get(sourceId);
-        const destNode = nodes.get(destId);
+        const source = nodes.get(sourceId);
+        const dest = nodes.get(destId);
 
-        if (sourceNode && destNode) {
-          // Calculate weight (distance)
-          const weight = getHaversineDistance(
-            sourceNode.lat, sourceNode.lon,
-            destNode.lat, destNode.lon
-          );
+        // Ensure both nodes exist (data sanity check)
+        if (source && dest) {
+          // Calculate weight (distance) using Haversine
+          const weight = getHaversineDistance(source.lat, source.lon, dest.lat, dest.lon);
 
           /*
            * ==========================================================
-           * !! AAYUDESH'S PART !!
-           * Call his addEdge method with the calculated weight.
+           * !! AAYUDESH'S PART (Hand-off) !!
+           * Adding the weighted edge to Aayudesh's graph.
            * ==========================================================
            */
-          // gatorGraph.addEdge(sourceId, destId, weight);
+          gatorGraph.addEdge(sourceId, destId, weight); // <-- UNCOMMENTED
           /*
            * ==========================================================
            */
@@ -143,8 +137,12 @@ async function loadGraphData() {
 // Example of Aayudesh's endpoint:
 // app.post('/find-path', (req, res) => {
 //   const { startNode, endNode } = req.body;
-//   const path = gatorGraph.dijkstra(startNode, endNode);
-//   res.json({ path });
+//   
+//   // Call his algorithm methods on the 'gatorGraph' object
+//   const dijkstraResult = gatorGraph.dijkstra(startNode, endNode);
+//   const aStarResult = gatorGraph.aStar(startNode, endNode);
+//   
+//   res.json({ dijkstra: dijkstraResult, aStar: aStarResult });
 // });
 /*
  * ==========================================================
@@ -157,8 +155,9 @@ async function startServer() {
   await loadGraphData();
 
   app.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
+    console.log(`🐊 GatorPath Server is running and listening on http://localhost:${PORT}`);
   });
 }
 
+// Run the server
 startServer();
