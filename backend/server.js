@@ -43,7 +43,7 @@ async function loadGraphData() {
 
   const edgePromise = new Promise((resolve, reject) => {
     let edgeCount = 0;
-    fs.createReadStream(path.resolve(__data, "edges.csv"))
+    fs.createReadStream(path.resolve(data, "edges.csv"))
       .pipe(csv())
       .on("data", (row) => {
         const sourceId = parseInt(row.source_node_ID);
