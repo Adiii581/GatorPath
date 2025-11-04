@@ -1,6 +1,8 @@
-const MinPriorityQueue = require('./priorityQueue');
+const MinPriorityQueue = require("./priorityQueue");
 
 function dijkstra(graph, startNode, endNode) {
+  const t0 = process.hrtime();
+
   const distances = new Map();
   const previous = new Map();
   const pq = new MinPriorityQueue();
@@ -37,16 +39,16 @@ function dijkstra(graph, startNode, endNode) {
     path.unshift(current);
     current = previous.get(current);
   }
-  if (path[0] !== startNode) return { error: 'No path found', nodesVisited: visited.size };
+  if (path[0] !== startNode)
+    return { error: "No path found", nodesVisited: visited.size };
 
-  // Time (rough ms)
-  const timeTaken = Date.now() - Date.now(); // Placeholder; use process.hrtime for precision if needed
-
+  const diff = process.hrtime(t0);
+  const timeTaken = diff[0] * 1000 + diff[1] / 1e6;
   return {
     path,
     distance: distances.get(endNode),
     nodesVisited: visited.size,
-    timeTaken
+    timeTaken,
   };
 }
 
