@@ -73,5 +73,3 @@ Once both the backend and frontend are running:
 3.  Type a destination (e.g., "Ben Hill Griffin Stadium") into the **End** box.
 4.  Click the **Find Route** button.
 6.  Watch the real-time visualization as both algorithms search for the path and see the final results appear in the sidebar.
-   
-Proposal link: https://docs.google.com/document/d/1XuAlLr0ptzoVryks59LQD--iJduZOdpCZy5cobvfzic/edit?usp=sharing
