@@ -39,15 +39,25 @@ function dijkstra(graph, startNode, endNode) {
     path.unshift(current);
     current = previous.get(current);
   }
-  if (path[0] !== startNode)
-    return { error: "No path found", nodesVisited: visited.size };
+
+  // ** MODIFICATION: Return visited array even if no path is found **
+  if (path[0] !== startNode) {
+    return {
+      error: "No path found",
+      nodesVisited: visited.size,
+      visitedNodes: Array.from(visited), // Return array for visualization
+    };
+  }
 
   const diff = process.hrtime(t0);
   const timeTaken = diff[0] * 1000 + diff[1] / 1e6;
+
+  // ** MODIFICATION: Return visited array on success **
   return {
     path,
     distance: distances.get(endNode),
     nodesVisited: visited.size,
+    visitedNodes: Array.from(visited), // Return array for visualization
     timeTaken,
   };
 }

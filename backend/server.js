@@ -1,3 +1,5 @@
+// backend/server.js
+
 // --- 1. Imports ---
 const fs = require("fs");
 const path = require("path");
@@ -15,7 +17,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// --- 2. Graph Loading  ---
+// --- 2. Graph Loading (Unchanged) ---
 const gatorGraph = new Graph();
 const nodes = new Map();
 
@@ -89,14 +91,8 @@ app.post("/pathfind", (req, res) => {
       .json({ error: "Invalid algorithm (dijkstra or astar)" });
   }
 
-  if (result.error) return res.status(200).json(result); // Changed: 404 → 200 (return data, not error page)
-  res.json({
-    path: result.path,
-    distance: result.distance,
-    nodesVisited: result.nodesVisited,
-    timeTaken: result.timeTaken,
-    algorithm,
-  });
+  if (result.error) return res.status(200).json(result);
+  res.json(result); // ** MODIFICATION: Send the whole result object **
 });
 
 app.post("/compare", (req, res) => {
@@ -114,16 +110,23 @@ app.post("/compare", (req, res) => {
   const aStarResult = aStar(gatorGraph, start, end);
   aStarResult.timeTaken = Number(process.hrtime.bigint() - tA0) / 1e6;
 
-  if (dijkstraResult.error || aStarResult.error)
-    return res.status(200).json({ error: "No path found" }); // Changed: 404 → 200
+  // ** MODIFICATION: Removed top-level error check **
+  // We now send the results regardless, so the frontend can
+  // visualize partial or failed searches.
 
   res.json({
     dijkstra: dijkstraResult,
     aStar: aStarResult,
+    // ** MODIFICATION: Make comparison math safe from 'undefined' **
     comparison: {
-      pathLengthDiff: Math.abs(dijkstraResult.distance - aStarResult.distance),
-      nodesCheckedDiff: dijkstraResult.nodesVisited - aStarResult.nodesVisited,
-      timeDiff: Math.abs(aStarResult.timeTaken - dijkstraResult.timeTaken),
+      pathLengthDiff: Math.abs(
+        (dijkstraResult.distance || 0) - (aStarResult.distance || 0)
+      ),
+      nodesCheckedDiff:
+        (dijkstraResult.nodesVisited || 0) - (aStarResult.nodesVisited || 0),
+      timeDiff: Math.abs(
+        (aStarResult.timeTaken || 0) - (dijkstraResult.timeTaken || 0)
+      ),
     },
   });
 });

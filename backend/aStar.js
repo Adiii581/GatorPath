@@ -63,15 +63,24 @@ function aStar(graph, startNode, endNode) {
     path.unshift(current);
     current = previous.get(current);
   }
-  if (path[0] !== startNode)
-    return { error: "No path found", nodesVisited: visited.size };
 
-  timeTaken = Number(process.hrtime.bigint() - t0) / 1e6;
+  // ** MODIFICATION: Return visited array even if no path is found **
+  if (path[0] !== startNode) {
+    return {
+      error: "No path found",
+      nodesVisited: visited.size,
+      visitedNodes: Array.from(visited), // Return array for visualization
+    };
+  }
 
+  const timeTaken = Number(process.hrtime.bigint() - t0) / 1e6;
+
+  // ** MODIFICATION: Return visited array on success **
   return {
     path,
     distance: gScore.get(endNode),
     nodesVisited: visited.size,
+    visitedNodes: Array.from(visited), // Return array for visualization
     timeTaken,
   };
 }
