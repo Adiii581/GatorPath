@@ -1,5 +1,3 @@
-// backend/server.js
-
 // --- 1. Imports ---
 const fs = require("fs");
 const path = require("path");
