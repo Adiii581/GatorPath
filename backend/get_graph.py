@@ -32,7 +32,6 @@ edges_df = gdf_edges.reset_index().rename(columns={
 
 final_edges = edges_df[['source_node_ID', 'destination_node_ID']]
 
-# Saves to CSV
 final_edges.to_csv('edges.csv', index=False)
 print("edges.csv written successfully.")
 
